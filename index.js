@@ -6,7 +6,7 @@ const port = process.env.port
 import mongoose from "mongoose"
 import User from "./routes/Users.js"
 import cors from "cors"
-
+import Contact from "./routes/Contact.js"
 
 app.use(cors())
 mongoose.connect(process.env.MONGOURI)
@@ -14,6 +14,7 @@ mongoose.connect(process.env.MONGOURI)
 .catch(()=>console.log("disconnected"))
 app.use(express.json())
 app.use("/api",User)
+app.use("/api",Contact)
 app.get("/",(req,res)=>{
     console.log("hello world")
     res.send("hello`")
