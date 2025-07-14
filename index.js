@@ -5,8 +5,10 @@ dotenv.config()
 const port = process.env.port
 import mongoose from "mongoose"
 import User from "./routes/Users.js"
+import cors from "cors"
 
 
+app.use(cors())
 mongoose.connect(process.env.MONGOURI)
 .then(()=>console.log("Db Connected"))
 .catch(()=>console.log("disconnected"))
