@@ -41,41 +41,79 @@ router.post("/signup", async (req, res) => {
 });
 
 /* ---------- LOGIN ---------- */
-router.post("/login", async (req, res) => {
-  const { Email, Password } = req.body;
+// router.post("/login", async (req, res) => {
+//   const { Email, Password } = req.body;
 
-  if (!Email || !Password) {
-    return res.status(400).json({ message: "Email and password are required" });
+//   if (!Email || !Password) {
+//     return res.status(400).json({ message: "Email and Password are required" });
+//   }
+
+//   try {
+//     const user = await Users.findOne({ Email });
+
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
+
+//     const isMatch = await bcrypt.compare(Password, user.Password);
+//     if (!isMatch) {
+//       return res.status(401).json({ message: "Invalid credentials" });
+//     }
+
+//     // Payload to embed in JWT
+//     const payload = {
+//       userId: user._id,
+//       name: user.FullName,
+//       email: user.Email,
+//       username: user.UserName,
+//       phone: user.PhoneNumber,
+//     };
+
+//     // Sign token
+//     const token = jwt.sign(payload, "thisissecret", { expiresIn: "7d" });
+
+//     // Respond with token and user info
+//     res.status(200).json({
+//       message: "Login successful",
+//       token,
+//       user: payload, // include decoded user info
+//     });
+//   } catch (err) {
+//     console.error("Login error:", err);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// });
+router.post("/login",async(req,res)=>{
+  const {Email,Password} = req.body;
+  if(!Email || !Password){
+    return res.status(400).json({message:"Invalid fields"})
   }
-
-  try {
-    /** 1. Find user */
-    const user = await Users.findOne({ Email });
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    /** 2. Compare passwords */
-    const isMatch = await bcrypt.compare(Password, user.Password);
-    if (!isMatch) {
-      return res.status(401).json({ message: "Incorrect password" });
-    }
-
-    /** 3. Generate JWT */
-    const token = jwt.sign({ id: user._id }, "thisissecret", { expiresIn: "7d" });
-
-    /** 4. Strip password before sending */
-    const { Password: _pw, ...userWithoutPw } = user.toObject();
-
-    res.status(200).json({
-      message: "Login successful",
-      token,
-      user: userWithoutPw,
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Internal server error" });
+  try{
+      const isUserExist = await Users.findOne({Email})
+      if(!isUserExist){
+        return res.status(404).json({message:"user not found"})
+      }
+      const isMatch = await bcrypt.compare(Password, isUserExist.Password)
+      if(!isMatch){
+        return res.status(400).json({message:"Incorrect Password"})
+      }
+      const payload = {
+        id:isUserExist.id,
+        fullname:isUserExist.FullName,
+        email:isUserExist.Email,
+        phone:isUserExist.PhoneNumber,
+        username:isUserExist.UserName
+      }
+      const token = jwt.sign(payload,"thisisecret",{expiresIn:"7d"})
+      res.status(200).json({
+        message:"Login successfull",
+        token,
+        user:payload
+      })
+  }catch(error){
+    console.log(error)
+    res.status(500).json({message:"Internal server error",error})
   }
-});
+})
 
 export default router;
